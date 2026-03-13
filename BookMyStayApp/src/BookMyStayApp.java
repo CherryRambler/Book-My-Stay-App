@@ -1,99 +1,73 @@
-abstract class Room {
-    private String roomType;
-    private int numberOfBeds;
-    private double pricePerNight;
-    private double size; // in square meters
+import java.util.HashMap;
+import java.util.Map;
 
-    public Room(String roomType, int numberOfBeds, double pricePerNight, double size) {
-        this.roomType = roomType;
-        this.numberOfBeds = numberOfBeds;
-        this.pricePerNight = pricePerNight;
-        this.size = size;
+class RoomInventory {
+
+    private HashMap<String, Integer> inventory;
+
+    public RoomInventory() {
+        inventory = new HashMap<>();
+    }
+    public void registerRoomType(String roomType, int count) {
+        if (count < 0) {
+            System.out.println("Cannot register negative room count for " + roomType);
+            return;
+        }
+        inventory.put(roomType, count);
     }
 
-    public String getRoomType() {
-        return roomType;
+    public int getAvailability(String roomType) {
+        return inventory.getOrDefault(roomType, 0);
     }
 
-    public int getNumberOfBeds() {
-        return numberOfBeds;
+    public boolean bookRoom(String roomType) {
+        int available = getAvailability(roomType);
+        if (available > 0) {
+            inventory.put(roomType, available - 1);
+            System.out.println("Room booked successfully: " + roomType);
+            return true;
+        } else {
+            System.out.println("No rooms available for: " + roomType);
+            return false;
+        }
     }
 
-    public double getPricePerNight() {
-        return pricePerNight;
+    public void cancelBooking(String roomType) {
+        int available = getAvailability(roomType);
+        inventory.put(roomType, available + 1);
+        System.out.println("Booking cancelled for: " + roomType);
     }
 
-    public double getSize() {
-        return size;
-    }
-
-    public abstract void displayRoomDetails();
-}
-
-class SingleRoom extends Room {
-    public SingleRoom() {
-        super("Single Room", 1, 50.0, 20.0);
-    }
-
-    @Override
-    public void displayRoomDetails() {
-        System.out.println("Room Type: " + getRoomType());
-        System.out.println("Beds: " + getNumberOfBeds());
-        System.out.println("Size: " + getSize() + " sq.m");
-        System.out.println("Price: $" + getPricePerNight() + " per night");
-    }
-}
-
-class DoubleRoom extends Room {
-    public DoubleRoom() {
-        super("Double Room", 2, 80.0, 35.0);
-    }
-
-    @Override
-    public void displayRoomDetails() {
-        System.out.println("Room Type: " + getRoomType());
-        System.out.println("Beds: " + getNumberOfBeds());
-        System.out.println("Size: " + getSize() + " sq.m");
-        System.out.println("Price: $" + getPricePerNight() + " per night");
-    }
-}
-
-class SuiteRoom extends Room {
-    public SuiteRoom() {
-        super("Suite Room", 3, 150.0, 60.0);
-    }
-
-    @Override
-    public void displayRoomDetails() {
-        System.out.println("Room Type: " + getRoomType());
-        System.out.println("Beds: " + getNumberOfBeds());
-        System.out.println("Size: " + getSize() + " sq.m");
-        System.out.println("Price: $" + getPricePerNight() + " per night");
+    public void displayInventory() {
+        System.out.println("\nCurrent Room Inventory:");
+        for (Map.Entry<String, Integer> entry : inventory.entrySet()) {
+            System.out.println("Room Type: " + entry.getKey() + ", Available: " + entry.getValue());
+        }
     }
 }
 
 public class BookMyStayApp {
+
     public static void main(String[] args) {
-        // Static availability variables
-        int singleRoomAvailability = 5;
-        int doubleRoomAvailability = 3;
-        int suiteRoomAvailability = 2;
 
-        Room single = new SingleRoom();
-        Room doubleRoom = new DoubleRoom();
-        Room suite = new SuiteRoom();
+        RoomInventory inventory = new RoomInventory();
 
-        System.out.println("Welcome to Book My Stay App (Use Case 2.1)\n");
+        inventory.registerRoomType("Single", 10);
+        inventory.registerRoomType("Double", 5);
+        inventory.registerRoomType("Suite", 2);
 
-        single.displayRoomDetails();
-        System.out.println("Available: " + singleRoomAvailability + "\n");
+        inventory.displayInventory();
 
-        doubleRoom.displayRoomDetails();
-        System.out.println("Available: " + doubleRoomAvailability + "\n");
+        inventory.bookRoom("Single");
+        inventory.bookRoom("Double");
+        inventory.bookRoom("Suite");
+        inventory.bookRoom("Suite");  // Book last Suite
+        inventory.bookRoom("Suite");  // Attempt to book beyond availability
 
-        suite.displayRoomDetails();
-        System.out.println("Available: " + suiteRoomAvailability + "\n");
+        inventory.displayInventory();
 
-        System.out.println("Thank you for using Book My Stay App!");
+        inventory.cancelBooking("Suite");
+
+        inventory.displayInventory();
     }
 }
