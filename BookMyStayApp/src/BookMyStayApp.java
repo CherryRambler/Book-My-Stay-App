@@ -1,73 +1,90 @@
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
-class RoomInventory {
+class Room {
+    private String type;
+    private double price;
+    private List<String> amenities;
 
-    private HashMap<String, Integer> inventory;
-
-    public RoomInventory() {
-        inventory = new HashMap<>();
+    public Room(String type, double price, List<String> amenities) {
+        this.type = type;
+        this.price = price;
+        this.amenities = amenities;
     }
-    public void registerRoomType(String roomType, int count) {
-        if (count < 0) {
-            System.out.println("Cannot register negative room count for " + roomType);
-            return;
+
+    public String getType() {
+        return type;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public List<String> getAmenities() {
+        return amenities;
+    }
+
+    @Override
+    public String toString() {
+        return "Room Type: " + type +
+                ", Price: $" + price +
+                ", Amenities: " + amenities;
+    }
+}
+
+class Inventory {
+    private Map<Room, Integer> roomAvailability;
+
+    public Inventory() {
+        roomAvailability = new HashMap<>();
+    }
+
+    public void addRoom(Room room, int quantity) {
+        roomAvailability.put(room, quantity);
+    }
+
+    public Map<Room, Integer> getAvailableRooms() {
+        Map<Room, Integer> available = new HashMap<>();
+        for (Map.Entry<Room, Integer> entry : roomAvailability.entrySet()) {
+            if (entry.getValue() > 0) {
+                available.put(entry.getKey(), entry.getValue());
+            }
         }
-        inventory.put(roomType, count);
+        return available;
+    }
+}
+
+class SearchService {
+    private Inventory inventory;
+
+    public SearchService(Inventory inventory) {
+        this.inventory = inventory;
     }
 
-    public int getAvailability(String roomType) {
-        return inventory.getOrDefault(roomType, 0);
-    }
-
-    public boolean bookRoom(String roomType) {
-        int available = getAvailability(roomType);
-        if (available > 0) {
-            inventory.put(roomType, available - 1);
-            System.out.println("Room booked successfully: " + roomType);
-            return true;
+    public void searchAvailableRooms() {
+        Map<Room, Integer> availableRooms = inventory.getAvailableRooms();
+        if (availableRooms.isEmpty()) {
+            System.out.println("No rooms available at the moment.");
         } else {
-            System.out.println("No rooms available for: " + roomType);
-            return false;
-        }
-    }
-
-    public void cancelBooking(String roomType) {
-        int available = getAvailability(roomType);
-        inventory.put(roomType, available + 1);
-        System.out.println("Booking cancelled for: " + roomType);
-    }
-
-    public void displayInventory() {
-        System.out.println("\nCurrent Room Inventory:");
-        for (Map.Entry<String, Integer> entry : inventory.entrySet()) {
-            System.out.println("Room Type: " + entry.getKey() + ", Available: " + entry.getValue());
+            System.out.println("Available Rooms:");
+            for (Room room : availableRooms.keySet()) {
+                System.out.println(room);
+            }
         }
     }
 }
 
 public class BookMyStayApp {
-
     public static void main(String[] args) {
+        Room single = new Room("Single", 100.0, Arrays.asList("WiFi", "TV"));
+        Room doubleRoom = new Room("Double", 180.0, Arrays.asList("WiFi", "TV", "Mini Fridge"));
+        Room suite = new Room("Suite", 300.0, Arrays.asList("WiFi", "TV", "Mini Fridge", "Balcony"));
 
-        RoomInventory inventory = new RoomInventory();
+        Inventory inventory = new Inventory();
+        inventory.addRoom(single, 5);
+        inventory.addRoom(doubleRoom, 0);
+        inventory.addRoom(suite, 2);
 
-        inventory.registerRoomType("Single", 10);
-        inventory.registerRoomType("Double", 5);
-        inventory.registerRoomType("Suite", 2);
-
-        inventory.displayInventory();
-
-        inventory.bookRoom("Single");
-        inventory.bookRoom("Double");
-        inventory.bookRoom("Suite");
-        inventory.bookRoom("Suite");  // Book last Suite
-        inventory.bookRoom("Suite");  // Attempt to book beyond availability
-
-        inventory.displayInventory();
-
-        inventory.cancelBooking("Suite");
-
-        inventory.displayInventory();
+        SearchService searchService = new SearchService(inventory);
+        searchService.searchAvailableRooms();
     }
 }
