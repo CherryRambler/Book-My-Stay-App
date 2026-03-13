@@ -1,90 +1,81 @@
-import java.util.*;
+import java.util.LinkedList;
+import java.util.Queue;
 
-class Room {
-    private String type;
-    private double price;
-    private List<String> amenities;
+class Reservation {
+    private String guestName;
+    private String roomType;
+    private int nights;
 
-    public Room(String type, double price, List<String> amenities) {
-        this.type = type;
-        this.price = price;
-        this.amenities = amenities;
+    public Reservation(String guestName, String roomType, int nights) {
+        this.guestName = guestName;
+        this.roomType = roomType;
+        this.nights = nights;
     }
 
-    public String getType() {
-        return type;
+    public String getGuestName() {
+        return guestName;
     }
 
-    public double getPrice() {
-        return price;
+    public String getRoomType() {
+        return roomType;
     }
 
-    public List<String> getAmenities() {
-        return amenities;
+    public int getNights() {
+        return nights;
     }
 
     @Override
     public String toString() {
-        return "Room Type: " + type +
-                ", Price: $" + price +
-                ", Amenities: " + amenities;
+        return "Guest: " + guestName +
+                ", Room Type: " + roomType +
+                ", Nights: " + nights;
     }
 }
 
-class Inventory {
-    private Map<Room, Integer> roomAvailability;
+class BookingRequestQueue {
 
-    public Inventory() {
-        roomAvailability = new HashMap<>();
+    private Queue<Reservation> requestQueue;
+
+    public BookingRequestQueue() {
+        requestQueue = new LinkedList<>();
     }
 
-    public void addRoom(Room room, int quantity) {
-        roomAvailability.put(room, quantity);
+    public void submitRequest(Reservation reservation) {
+        requestQueue.add(reservation);
+        System.out.println("Booking request received for " + reservation.getGuestName());
     }
 
-    public Map<Room, Integer> getAvailableRooms() {
-        Map<Room, Integer> available = new HashMap<>();
-        for (Map.Entry<Room, Integer> entry : roomAvailability.entrySet()) {
-            if (entry.getValue() > 0) {
-                available.put(entry.getKey(), entry.getValue());
-            }
+    public void showQueuedRequests() {
+
+        if (requestQueue.isEmpty()) {
+            System.out.println("No booking requests in queue.");
+            return;
         }
-        return available;
-    }
-}
 
-class SearchService {
-    private Inventory inventory;
+        System.out.println("\nCurrent Booking Request Queue:");
 
-    public SearchService(Inventory inventory) {
-        this.inventory = inventory;
-    }
-
-    public void searchAvailableRooms() {
-        Map<Room, Integer> availableRooms = inventory.getAvailableRooms();
-        if (availableRooms.isEmpty()) {
-            System.out.println("No rooms available at the moment.");
-        } else {
-            System.out.println("Available Rooms:");
-            for (Room room : availableRooms.keySet()) {
-                System.out.println(room);
-            }
+        for (Reservation r : requestQueue) {
+            System.out.println(r);
         }
     }
 }
 
 public class BookMyStayApp {
+
     public static void main(String[] args) {
-        Room single = new Room("Single", 100.0, Arrays.asList("WiFi", "TV"));
-        Room doubleRoom = new Room("Double", 180.0, Arrays.asList("WiFi", "TV", "Mini Fridge"));
-        Room suite = new Room("Suite", 300.0, Arrays.asList("WiFi", "TV", "Mini Fridge", "Balcony"));
 
-        Inventory inventory = new Inventory();
-        inventory.addRoom(single, 5);
-        inventory.addRoom(doubleRoom, 0);
-        inventory.addRoom(suite, 2);
+        BookingRequestQueue queue = new BookingRequestQueue();
 
-        SearchService searchService = new SearchService(inventory);
-        searchService.searchAvailableRooms();
+        Reservation r1 = new Reservation("Alice", "Deluxe", 2);
+        Reservation r2 = new Reservation("Bob", "Suite", 1);
+        Reservation r3 = new Reservation("Charlie", "Standard", 3);
+
+        queue.submitRequest(r1);
+        queue.submitRequest(r2);
+        queue.submitRequest(r3);
+
+        queue.showQueuedRequests();
+
+        System.out.println("\nRequests stored in FIFO order for future allocation.");
     }
 }
